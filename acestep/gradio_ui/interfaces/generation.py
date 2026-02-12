@@ -677,6 +677,7 @@ def create_generation_tab_section(dit_handler, llm_handler, init_params=None, la
                                 instrumental_checkbox = gr.Checkbox(
                                     label=t("generation.instrumental_label"), value=False, scale=1,
                                 )
+                                generate_lyrics_btn = gr.Button(t("generation.generate_lyrics_btn"), variant="secondary", size="sm", scale=2)
                                 format_lyrics_btn = gr.Button(t("generation.format_lyrics_btn"), variant="secondary", size="sm", scale=2)
 
                 # Right column: 🎲 Random
