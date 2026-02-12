@@ -1263,6 +1263,102 @@ def handle_create_sample(
         gr.update(value="Custom"),  # generation_mode - auto-switch to Custom
     )
 
+def handle_generate_lyrics(
+    llm_handler,
+    caption: str,
+    caption: str,
+    instrumental: bool,
+    vocal_language: str,
+    lm_temperature: float,
+    lm_top_k: int,
+    lm_top_p: float,
+    constrained_decoding_debug: bool = False
+):
+    """Generate lyrics from the current caption using the LLM.
+
+    Uses the same 'inspiration' / 'create_sample' LM path that Simple mode
+    uses, but feeds the user's caption as the query and only populates the
+    lyrics output field, preserving the user's custom caption.
+
+    Returns:
+        Tuple of updates for:
+        - lyrics (updated with generated lyrics)
+        - bpm
+        - audio_duration
+        - key_scale
+        - vocal_language
+        - time_signature
+        - is_format_caption_state
+        - status_output
+    """
+    if not llm_handler.llm_initialized:
+        gr.Warning(t("messages.lm_not_initialized"))
+        return (
+            gr.update(),    # lyrics
+            gr.update(),    # bpm
+            gr.update(),    # audio_duration
+            gr.update(),    # key_scale
+            gr.update(),    # vocal_language
+            gr.update(),    # time_signature
+            gr.update(),    # is_format_caption_state
+            t("messages.lm_not_initialized"),
+        )
+
+    if not caption or not caption.strip():
+        gr.Warning(t("messages.caption_required_for_lyrics"))
+        return (
+            gr.update(),    # lyrics
+            gr.update(),    # bpm
+            gr.update(),    # audio_duration
+            gr.update(),    # key_scale
+            gr.update(),    # vocal_language
+            gr.update(),    # time_signature
+            gr.update(),    # is_format_caption_state
+            t("messages.caption_required_for_lyrics"),  
+        )
+
+    top_k_value = None if not lm_top_k or lm_top_k == 0 else int(lm_top_k)
+    top_p_value = None if not lm_top_p or lm_top_p >= 1.0 else lm_top_p
+
+    result = create_sample(
+        llm_handler=llm_handler,
+        query=caption,
+        instrumental=instrumental,
+        vocal_language=vocal_language if vocal_language and vocal_language.strip().lower() != "unknown" else None,    # Note: Currently only support lyric gen with 'en'.
+        temperature=lm_temperature,
+        top_k=top_k_value,
+        top_p=top_p_value,
+        use_constrained_decoding=True,
+        constrained_decoding_debug=constrained_decoding_debug,
+    )
+
+    if not result.success:
+        gr.Warning(result.status_message or t("messages.lyrics_generation_failed"))
+        return (
+            gr.update(),    # lyrics
+            gr.update(),    # bpm
+            gr.update(),    # audio_duration
+            gr.update(),    # key_scale
+            gr.update(),    # vocal_language
+            gr.update(),    # time_signature
+            gr.update(),    # is_format_caption_state
+            result.status_message or t("messages.lyrics_generation_failed"),
+        )
+
+    gr.Info(t("messages.lyrics_generated"))
+    clamped_duration = clamp_duration_to_gpu_limit(result.duration, llm_handler)
+    audio_duration_value = clamped_duration if clamped_duration and clamped_duration > 0 else -1
+
+    return (
+        result.lyrics,
+        result.bpm,
+        audio_duration_value,
+        result.keyscale,
+        result.language,
+        result.timesignature,
+        True,        # is_fromat_caption_state
+        result.status_message,
+    )
 
 def handle_format_sample(
     llm_handler,
