@@ -1266,7 +1266,6 @@ def handle_create_sample(
 def handle_generate_lyrics(
     llm_handler,
     caption: str,
-    caption: str,
     instrumental: bool,
     vocal_language: str,
     lm_temperature: float,
