@@ -784,6 +784,7 @@ def create_generation_tab_section(dit_handler, llm_handler, init_params=None, la
         "instrumental_checkbox": instrumental_checkbox,
         "vocal_language": vocal_language,
         "format_caption_btn": format_caption_btn,
+        "generate_lyrics_btn": generate_lyrics_btn,
         "format_lyrics_btn": format_lyrics_btn,
         "optional_params_accordion": optional_params_accordion,
         "bpm": bpm,
