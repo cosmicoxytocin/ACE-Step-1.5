@@ -137,6 +137,7 @@ class GenerationParams:
     repainting_start: float = 0.0
     repainting_end: float = -1
     audio_cover_strength: float = 1.0
+    cover_noise_strength: float = 0.0  # 0=pure noise (no cover), 1=closest to src audio
 
     # 5Hz Language Model Parameters
     thinking: bool = True
@@ -572,6 +573,8 @@ def generate_music(
         if params.task_type in ("repaint", "cover"):
             dit_input_caption = params.caption or dit_input_caption
             dit_input_lyrics = params.lyrics if params.lyrics is not None else dit_input_lyrics
+            logger.info(f"[generate_music] Repaint/Cover task: using params.caption='{params.caption}', params.lyrics='{params.lyrics}'")
+            logger.info(f"[generate_music] Final inputs: dit_input_caption='{dit_input_caption}', dit_input_lyrics='{dit_input_lyrics}'")
 
         # Phase 2: DiT music generation
         # Use seed_for_generation (from config.seed or params.seed) instead of params.seed for actual generation
@@ -595,6 +598,7 @@ def generate_music(
             repainting_end=params.repainting_end,
             instruction=params.instruction,
             audio_cover_strength=params.audio_cover_strength,
+            cover_noise_strength=params.cover_noise_strength,
             task_type=params.task_type,
             use_adg=params.use_adg,
             cfg_interval_start=params.cfg_interval_start,
